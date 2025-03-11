@@ -1,6 +1,8 @@
 # Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 # SPDX-License-Identifier: Apache-2.0
-
+# off warnings
+import warnings
+warnings.filterwarnings("ignore")
 import ast
 import logging
 import os
@@ -50,6 +52,7 @@ from chronos import ChronosConfig, ChronosTokenizer
 app = typer.Typer(pretty_exceptions_enable=False)
 
 
+
 def is_main_process() -> bool:
     """
     Check if we're on the main process.
@@ -57,6 +60,7 @@ def is_main_process() -> bool:
     if not dist.is_torchelastic_launched():
         return True
     return int(os.environ["RANK"]) == 0
+
 
 
 def log_on_main(msg: str, logger: logging.Logger, log_level: int = logging.INFO):
@@ -561,8 +565,9 @@ def main(
     raw_training_config = deepcopy(locals())
     output_dir = Path(output_dir)
     training_data_paths = ast.literal_eval(training_data_paths)
+    print(f"training_data_paths: {training_data_paths}")
     assert isinstance(training_data_paths, list)
-
+    print("ok! 1")
     if isinstance(probability, str):
         probability = ast.literal_eval(probability)
     elif probability is None:
@@ -578,7 +583,7 @@ def main(
             logger,
         )
         dataloader_num_workers = len(training_data_paths)
-
+    print("ok! 2")
     if isinstance(tokenizer_kwargs, str):
         tokenizer_kwargs = ast.literal_eval(tokenizer_kwargs)
     assert isinstance(tokenizer_kwargs, dict)
@@ -593,7 +598,7 @@ def main(
         f"for training: {training_data_paths}",
         logger,
     )
-
+    print("ok! 3")
     log_on_main(
         f"Mixing probabilities: {probability}",
         logger,
@@ -610,7 +615,7 @@ def main(
         )
         for data_path in training_data_paths
     ]
-
+    print("ok! 4")
     log_on_main("Initializing model", logger)
 
     model = load_model(
@@ -622,7 +627,8 @@ def main(
         pad_token_id=pad_token_id,
         eos_token_id=eos_token_id,
     )
-
+    print("ok! 5")
+    print("model: ", model)
     chronos_config = ChronosConfig(
         tokenizer_class=tokenizer_class,
         tokenizer_kwargs=tokenizer_kwargs,
@@ -639,7 +645,8 @@ def main(
         top_k=top_k,
         top_p=top_p,
     )
-
+    print("ok! 6")
+    print("chronos_config: ", chronos_config)
     # Add extra items to model config so that it's saved in the ckpt
     model.config.chronos_config = chronos_config.__dict__
 
@@ -654,7 +661,8 @@ def main(
         imputation_method=LastValueImputation() if model_type == "causal" else None,
         mode="training",
     ).shuffle(shuffle_buffer_length=shuffle_buffer_length)
-
+    print("ok! 7")
+    print("shuffled_train_dataset: ", shuffled_train_dataset)
     # Define training args
     training_args = TrainingArguments(
         output_dir=str(output_dir),
@@ -668,7 +676,7 @@ def main(
         logging_steps=log_steps,
         save_strategy="steps",
         save_steps=save_steps,
-        report_to=["tensorboard"],
+      #  report_to=["tensorboard"],
         max_steps=max_steps,
         gradient_accumulation_steps=gradient_accumulation_steps,
         dataloader_num_workers=dataloader_num_workers,
@@ -678,6 +686,8 @@ def main(
         remove_unused_columns=False,
     )
 
+    print("ok! 8")
+    print("training_args: ", training_args)
     # Create Trainer instance
     trainer = Trainer(
         model=model,
@@ -685,7 +695,7 @@ def main(
         train_dataset=shuffled_train_dataset,
     )
     log_on_main("Training", logger)
-
+    print("ok! 9")
     trainer.train()
 
     if is_main_process():

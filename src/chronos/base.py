@@ -5,10 +5,10 @@
 # Original source:
 # https://github.com/autogluon/autogluon/blob/f57beb26cb769c6e0d484a6af2b89eab8aee73a8/timeseries/src/autogluon/timeseries/models/chronos/pipeline/base.py
 
+# Importing Required Libraries
 from enum import Enum
 from pathlib import Path
 from typing import TYPE_CHECKING, Dict, List, Optional, Tuple, Union
-
 import torch
 
 if TYPE_CHECKING:
@@ -43,10 +43,12 @@ class BaseChronosPipeline(metaclass=PipelineRegistry):
 
     def __init__(self, inner_model: "PreTrainedModel"):
         """
+        Base class for all Chronos pipelines.
+        
         Parameters
         ----------
-        inner_model : PreTrainedModel
-            A hugging-face transformers PreTrainedModel, e.g., T5ForConditionalGeneration
+        inner_model
+            The inner model to be wrapped by the pipeline.
         """
         # for easy access to the inner HF-style model
         self.inner_model = inner_model
@@ -54,6 +56,18 @@ class BaseChronosPipeline(metaclass=PipelineRegistry):
     def _prepare_and_validate_context(
         self, context: Union[torch.Tensor, List[torch.Tensor]]
     ):
+        """
+        Prepare and validate the context tensor(s) for prediction.
+        
+        Parameters
+        ----------
+        context
+        
+        Returns
+        -------
+        context
+            The context tensor, ready for prediction.
+        """
         if isinstance(context, list):
             context = left_pad_and_stack_1D(context)
         assert isinstance(context, torch.Tensor)

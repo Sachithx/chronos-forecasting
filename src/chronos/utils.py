@@ -8,6 +8,17 @@ import torch
 
 
 def left_pad_and_stack_1D(tensors: List[torch.Tensor]) -> torch.Tensor:
+    """
+    Left-pads a list of 1D tensors with NaNs and stacks them into a 2D tensor.
+    Parameters
+    ----------
+    tensors
+        List of 1D tensors.
+    Returns
+    -------
+    torch.Tensor
+        2D tensor with NaN-padded 1D tensors.
+    """
     max_len = max(len(c) for c in tensors)
     padded = []
     for c in tensors:

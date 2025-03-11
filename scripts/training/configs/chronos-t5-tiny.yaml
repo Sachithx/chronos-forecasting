@@ -1,9 +1,7 @@
 training_data_paths:
-- "/home/ubuntu/tsmixup-data.arrow"
-- "/home/ubuntu/kernelsynth-data.arrow"
+- "/home/AD/sachith/chronos-forecasting/dataset/m4_daily_fixed/data-00000-of-00001.arrow"
 probability:
-- 0.9
-- 0.1
+- 1.0
 context_length: 512
 prediction_length: 64
 min_past: 60

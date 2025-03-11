@@ -1,5 +1,5 @@
 training_data_paths:
-- "/usr1/home/s124mdg54_01/chronos-forecasting/dataset/tsmixup-data.arrow" # "/home/ubuntu/tsmixup-data.arrow" 
+  - "/home/AD/sachith/chronos-forecasting/scripts/kernelsynth-data.arrow"
 probability:
 - 1.0
 context_length: 512

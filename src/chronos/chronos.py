@@ -53,6 +53,13 @@ class ChronosConfig:
         ), f"Special token id's must be smaller than {self.n_special_tokens=}"
 
     def create_tokenizer(self) -> "ChronosTokenizer":
+        """
+        Create a tokenizer object based on the configuration.
+        
+        Returns
+        -------
+        tokenizer
+            A tokenizer object."""
         class_ = getattr(chronos, self.tokenizer_class)
         return class_(**self.tokenizer_kwargs, config=self)
 
@@ -175,6 +182,34 @@ class MeanScaleUniformBins(ChronosTokenizer):
     def _input_transform(
         self, context: torch.Tensor, scale: Optional[torch.Tensor] = None
     ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+        """
+        Turn a batch of time series into token IDs, attention map, and scale.
+        
+        Parameters
+        ----------
+        context
+            A tensor shaped (batch_size, time_length), containing the
+            timeseries to forecast. Use left-padding with ``torch.nan``
+            to align time series of different lengths.
+            scale
+            A tensor of the same shape as ``context`` containing the
+            scale of the time series. If not provided, it will be
+            computed as the mean of the non-missing values.
+                
+        Returns
+        -------
+        token_ids
+            A tensor of integers, shaped (batch_size, time_length + 1)
+            if ``config.use_eos_token`` and (batch_size, time_length)
+            otherwise, containing token IDs for the input series.
+        attention_mask
+            A boolean tensor, same shape as ``token_ids``, indicating
+            which input observations are not ``torch.nan`` (i.e. not
+            missing nor padding).
+        scale
+            A tensor of the same shape as ``context`` containing the
+            scale of the time series.
+        """
         context = context.to(dtype=torch.float32)
         attention_mask = ~torch.isnan(context)
 
@@ -205,6 +240,19 @@ class MeanScaleUniformBins(ChronosTokenizer):
     def _append_eos_token(
         self, token_ids: torch.Tensor, attention_mask: torch.Tensor
     ) -> Tuple[torch.Tensor, torch.Tensor]:
+        """
+        Append an EOS token to the token IDs and attention mask.
+        
+        Parameters
+        ----------
+        token_ids
+            A tensor of integers, shaped (batch_size, time_length),
+            containing token IDs for the input series.
+        attention_mask
+            A boolean tensor, same shape as ``token_ids``, indicating
+            which input observations are not ``torch.nan`` (i.e. not
+            missing nor padding).
+        """
         batch_size = token_ids.shape[0]
         eos_tokens = torch.full((batch_size, 1), fill_value=self.config.eos_token_id)
         token_ids = torch.concat((token_ids, eos_tokens), dim=1)
