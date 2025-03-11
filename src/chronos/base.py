@@ -18,6 +18,9 @@ from .utils import left_pad_and_stack_1D
 
 
 class ForecastType(Enum):
+    """
+    Enum class for different types of forecasts.
+    """
     SAMPLES = "samples"
     QUANTILES = "quantiles"
 
